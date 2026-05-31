@@ -1258,3 +1258,21 @@ em {
     height: 64px;
   }
 }
+.whatsapp-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: #25D366;
+  color: white;
+  text-decoration: none;
+  padding: 14px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  z-index: 9999;
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-2px);
+}
