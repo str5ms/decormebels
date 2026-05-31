@@ -9,6 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+  <a
+  href="https://wa.me/77013539183"
+  class="whatsapp-float"
+  target="_blank"
+>
+  WhatsApp
+</a>
 <body>
   <header class="site-header">
     <a class="brand" href="index.html"><small>Decor</small><strong>MEBEL<span>KZ</span></strong></a>
@@ -205,7 +212,34 @@
     <button class="lightbox-next" type="button" data-next aria-label="Следующее фото">›</button>
     <div class="lightbox-thumbs" data-lightbox-thumbs></div>
   </div>
+  
 
+  <script>
+document.querySelector("[data-lead-form]").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const project = document.getElementById("project").value;
+  const budget = document.getElementById("budget").value;
+  const message = document.getElementById("message").value;
+
+  const text = `
+🆕 Новая заявка
+
+👤 Имя: ${name}
+📞 Телефон: ${phone}
+🛠 Проект: ${project}
+💰 Бюджет: ${budget}
+💬 Комментарий: ${message}
+`;
+
+  window.open(
+    "https://wa.me/77013539183?text=" + encodeURIComponent(text),
+    "_blank"
+  );
+});
+</script>
   <script src="app.js"></script>
 </body>
 </html>
