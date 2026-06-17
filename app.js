@@ -104,12 +104,28 @@ function setupLeadForm() {
 
     const sentToServer = await submitLead(lead);
     if (!sentToServer) {
-      const leads = loadLeads();
-      leads.unshift(lead);
-      saveLeads(leads);
-    }
-    form.reset();
-    status.textContent = "Заявка сохранена. Мы скоро свяжемся с вами.";
+  const leads = loadLeads();
+  leads.unshift(lead);
+  saveLeads(leads);
+}
+
+const text =
+`Новая заявка с сайта Decor Mebel KZ
+
+Имя: ${lead.name}
+Телефон: ${lead.phone}
+Проект: ${lead.project}
+Бюджет: ${lead.budget}
+Комментарий: ${lead.message}`;
+
+form.reset();
+status.textContent =
+  "Заявка сохранена. Сейчас откроется WhatsApp.";
+
+window.open(
+  `https://wa.me/77013539183?text=${encodeURIComponent(text)}`,
+  "_blank"
+);
   });
 }
 
