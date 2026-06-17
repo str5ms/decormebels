@@ -62,18 +62,23 @@ function saveLeads(leads) {
 
 async function submitLead(lead) {
   try {
-    const response = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(lead)
-    });
-    if (response.ok) return true;
-  } catch {
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbwv0jTKV2cWw-wB9DyhncSr3P3I32yIbtHwsr_mGYfjesHaXmsL4QzBEwXMsWM-l6AGiw/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(lead)
+      }
+    );
+
+    return response.ok;
+  } catch (error) {
+    console.error(error);
     return false;
   }
-  return false;
 }
-
 function makeLead(form) {
   const data = new FormData(form);
   return {
