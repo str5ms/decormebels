@@ -33,179 +33,281 @@ const works = [
   { src: "assets/work-32.jpeg", title: "Светлая мебельная группа" }
 ];
 
-const leadKey = "decorMebelLeads";
-
-function hasStorage() {
-  try {
-    return typeof localStorage !== "undefined";
-  } catch {
-    return false;
-  }
-}
-
-function loadLeads() {
-  if (!hasStorage()) return window.__decorMebelLeads || [];
-  try {
-    return JSON.parse(localStorage.getItem(leadKey)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLeads(leads) {
-  if (!hasStorage()) {
-    window.__decorMebelLeads = leads;
-    return;
-  }
-  localStorage.setItem(leadKey, JSON.stringify(leads));
-}
+const API_URL =
+"https://script.google.com/macros/s/AKfycbynFkaT0LCPYz5NiK__CWfoJ8dSQ6-8nz9ZzzgtAipnnxb51P4T8sj9d9BSe1TL3qDVgw/exec";
 
 async function submitLead(lead) {
+
   try {
-    const response = await fetch(
-      "https://script.google.com/macros/s/AKfycbwv0jTKV2cWw-wB9DyhncSr3P3I32yIbtHwsr_mGYfjesHaXmsL4QzBEwXMsWM-l6AGiw/exec",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(lead)
-      }
-    );
 
-    return response.ok;
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: lead.name,
+        phone: lead.phone,
+        project: lead.project,
+        budget: lead.budget,
+        message: lead.message
+      })
+    });
+
+    const result = await response.json();
+
+    return result.success === true;
+
   } catch (error) {
+
     console.error(error);
+
     return false;
+
   }
-}
-function makeLead(form) {
-  const data = new FormData(form);
-  return {
-    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    createdAt: new Date().toISOString(),
-    status: "new",
-    name: (data.get("name") || "").trim(),
-    phone: (data.get("phone") || "").trim(),
-    project: data.get("project") || "",
-    budget: data.get("budget") || "",
-    message: (data.get("message") || "").trim()
-  };
+
 }
 
+function makeLead(form) {
+
+  const data = new FormData(form);
+
+  return {
+
+    name: (data.get("name") || "").trim(),
+
+    phone: (data.get("phone") || "").trim(),
+
+    project: data.get("project") || "",
+
+    budget: data.get("budget") || "",
+
+    message: (data.get("message") || "").trim()
+
+  };
+
+}
 function setupLeadForm() {
+
   const form = document.querySelector("[data-lead-form]");
+
   if (!form) return;
 
+  const status = form.querySelector("[data-form-status]");
+
   form.addEventListener("submit", async (event) => {
+
     event.preventDefault();
+
+    status.textContent = "";
+
     const lead = makeLead(form);
-    const status = form.querySelector("[data-form-status]");
 
     if (!lead.name || !lead.phone) {
-      status.textContent = "Заполните имя и телефон, чтобы мы могли связаться.";
+
+      status.textContent =
+        "Пожалуйста, заполните имя и телефон.";
+
       return;
+
     }
 
-    const sentToServer = await submitLead(lead);
-    if (!sentToServer) {
-  const leads = loadLeads();
-  leads.unshift(lead);
-  saveLeads(leads);
-}
+    status.textContent = "Отправляем заявку...";
 
-const text =
-`Новая заявка с сайта Decor Mebel KZ
+    const success = await submitLead(lead);
 
-Имя: ${lead.name}
-Телефон: ${lead.phone}
-Проект: ${lead.project}
-Бюджет: ${lead.budget}
-Комментарий: ${lead.message}`;
+    if (!success) {
 
-form.reset();
-status.textContent =
-  "Заявка сохранена. Сейчас откроется WhatsApp.";
+      status.textContent =
+        "❌ Не удалось отправить заявку. Попробуйте ещё раз.";
 
-window.open(
-  `https://wa.me/77013539183?text=${encodeURIComponent(text)}`,
-  "_blank"
-);
+      return;
+
+    }
+
+    const text =
+`Здравствуйте!
+
+Новая заявка с сайта Decor Mebel KZ.
+
+👤 Имя: ${lead.name}
+📞 Телефон: ${lead.phone}
+🏠 Проект: ${lead.project || "-"}
+💰 Бюджет: ${lead.budget || "-"}
+💬 Комментарий: ${lead.message || "-"}`;
+
+    form.reset();
+
+    status.textContent =
+      "✅ Заявка успешно отправлена! Сейчас откроется WhatsApp...";
+
+    setTimeout(() => {
+
+      window.open(
+        `https://wa.me/77013539183?text=${encodeURIComponent(text)}`,
+        "_blank"
+      );
+
+    }, 700);
+
   });
+
 }
+/* ===========================
+   Галерея
+=========================== */
 
 function setupLightbox() {
+
   const lightbox = document.querySelector("[data-lightbox]");
+
   if (!lightbox) return;
 
   const image = lightbox.querySelector("[data-lightbox-image]");
   const title = lightbox.querySelector("[data-lightbox-title]");
   const thumbs = lightbox.querySelector("[data-lightbox-thumbs]");
+
   let active = 0;
 
   function render() {
+
     image.src = works[active].src;
     image.alt = works[active].title;
     title.textContent = works[active].title;
+
     thumbs.querySelectorAll("button").forEach((button, index) => {
       button.classList.toggle("active", index === active);
     });
+
   }
 
   function open(index) {
+
     active = index;
+
     lightbox.classList.add("open");
+
     document.body.style.overflow = "hidden";
+
     render();
+
   }
 
   function close() {
+
     lightbox.classList.remove("open");
+
     document.body.style.overflow = "";
+
   }
 
   function move(step) {
+
     active = (active + step + works.length) % works.length;
+
     render();
+
   }
 
-  thumbs.innerHTML = works
-    .map((work, index) => `<button type="button" aria-label="${work.title}" data-thumb="${index}"><img src="${work.src}" alt=""></button>`)
-    .join("");
+  thumbs.innerHTML = works.map((work, index) => `
+      <button
+        type="button"
+        data-thumb="${index}"
+        aria-label="${work.title}">
+        <img src="${work.src}" alt="${work.title}">
+      </button>
+  `).join("");
 
-  document.querySelectorAll("[data-gallery-index]").forEach((button) => {
-    button.addEventListener("click", () => open(Number(button.dataset.galleryIndex)));
+  document.querySelectorAll("[data-gallery-index]").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      open(Number(button.dataset.galleryIndex));
+
+    });
+
   });
 
-  thumbs.addEventListener("click", (event) => {
+  thumbs.addEventListener("click", event => {
+
     const button = event.target.closest("[data-thumb]");
+
     if (!button) return;
+
     active = Number(button.dataset.thumb);
+
     render();
+
   });
 
-  lightbox.querySelector("[data-close]").addEventListener("click", close);
-  lightbox.querySelector("[data-prev]").addEventListener("click", () => move(-1));
-  lightbox.querySelector("[data-next]").addEventListener("click", () => move(1));
-  lightbox.addEventListener("click", (event) => {
-    if (event.target === lightbox) close();
+  lightbox
+    .querySelector("[data-close]")
+    .addEventListener("click", close);
+
+  lightbox
+    .querySelector("[data-prev]")
+    .addEventListener("click", () => move(-1));
+
+  lightbox
+    .querySelector("[data-next]")
+    .addEventListener("click", () => move(1));
+
+  lightbox.addEventListener("click", event => {
+
+    if (event.target === lightbox) {
+
+      close();
+
+    }
+
   });
-  window.addEventListener("keydown", (event) => {
+
+  window.addEventListener("keydown", event => {
+
     if (!lightbox.classList.contains("open")) return;
+
     if (event.key === "Escape") close();
+
     if (event.key === "ArrowLeft") move(-1);
+
     if (event.key === "ArrowRight") move(1);
+
   });
+
 }
+
+/* ===========================
+   Галерея работ
+=========================== */
 
 function fillGalleryPage() {
+
   const grid = document.querySelector("[data-gallery-grid]");
+
   if (!grid) return;
-  grid.innerHTML = works
-    .map((work, index) => `<button type="button" data-gallery-index="${index}"><img src="${work.src}" alt="${work.title}"></button>`)
-    .join("");
+
+  grid.innerHTML = works.map((work, index) => `
+      <button
+        type="button"
+        data-gallery-index="${index}">
+        <img
+          src="${work.src}"
+          alt="${work.title}">
+      </button>
+  `).join("");
+
 }
 
-setupLeadForm();
-fillGalleryPage();
-setupLightbox();
+/* ===========================
+   Запуск
+=========================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    setupLeadForm();
+
+    fillGalleryPage();
+
+    setupLightbox();
+
+});
