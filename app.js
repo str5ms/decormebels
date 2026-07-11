@@ -144,7 +144,7 @@ function setupLeadForm() {
     setTimeout(() => {
 
       window.open(
-        `https://wa.me/77013539183?text=${encodeURIComponent(text)}`,
+        `https://wa.me/77475123621?text=${encodeURIComponent(text)}`,
         "_blank"
       );
 
