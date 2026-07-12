@@ -38,97 +38,87 @@ const API_URL =
 
 async function submitLead(lead) {
 
-  try {
+    try {
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: lead.name,
-        phone: lead.phone,
-        project: lead.project,
-        budget: lead.budget,
-        message: lead.message
-      })
-    });
+        const response = await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(lead)
+        });
 
-    const result = await response.json();
+        return true;
 
-    return result.success === true;
+    } catch (error) {
 
-  } catch (error) {
+        console.error("Ошибка отправки:", error);
 
-    console.error(error);
+        return false;
 
-    return false;
-
-  }
+    }
 
 }
 
 function makeLead(form) {
 
-  const data = new FormData(form);
+    const data = new FormData(form);
 
-  return {
+    return {
 
-    name: (data.get("name") || "").trim(),
+        name: (data.get("name") || "").trim(),
 
-    phone: (data.get("phone") || "").trim(),
+        phone: (data.get("phone") || "").trim(),
 
-    project: data.get("project") || "",
+        project: data.get("project") || "",
 
-    budget: data.get("budget") || "",
+        budget: data.get("budget") || "",
 
-    message: (data.get("message") || "").trim()
+        message: (data.get("message") || "").trim()
 
-  };
+    };
 
 }
 function setupLeadForm() {
 
-  const form = document.querySelector("[data-lead-form]");
+    const form = document.querySelector("[data-lead-form]");
 
-  if (!form) return;
+    if (!form) return;
 
-  const status = form.querySelector("[data-form-status]");
+    const status = form.querySelector("[data-form-status]");
 
-  form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async function (event) {
 
-    event.preventDefault();
+        event.preventDefault();
 
-    status.textContent = "";
+        status.textContent = "";
 
-    const lead = makeLead(form);
+        const lead = makeLead(form);
 
-    if (!lead.name || !lead.phone) {
+        if (!lead.name || !lead.phone) {
 
-      status.textContent =
-        "Пожалуйста, заполните имя и телефон.";
+            status.textContent =
+                "Пожалуйста, заполните имя и телефон.";
 
-      return;
+            return;
 
-    }
+        }
 
-    status.textContent = "Отправляем заявку...";
+        status.textContent = "Отправляем заявку...";
 
-    const success = await submitLead(lead);
+        const success = await submitLead(lead);
 
-    if (!success) {
+        if (!success) {
 
-      status.textContent =
-        "❌ Не удалось отправить заявку. Попробуйте ещё раз.";
+            status.textContent =
+                "❌ Не удалось отправить заявку.";
 
-      return;
+            return;
 
-    }
+        }
 
-    const text =
+        const text =
 `Здравствуйте!
 
-Новая заявка с сайта Decor Mebel KZ.
+Новая заявка с сайта Decor Mebel KZ
 
 👤 Имя: ${lead.name}
 📞 Телефон: ${lead.phone}
@@ -136,21 +126,20 @@ function setupLeadForm() {
 💰 Бюджет: ${lead.budget || "-"}
 💬 Комментарий: ${lead.message || "-"}`;
 
-    form.reset();
+        form.reset();
 
-    status.textContent =
-      "✅ Заявка успешно отправлена! Сейчас откроется WhatsApp...";
+        status.textContent =
+            "✅ Заявка отправлена! Открываем WhatsApp...";
 
-    setTimeout(() => {
+        setTimeout(function () {
 
-      window.open(
-        `https://wa.me/77475123621?text=${encodeURIComponent(text)}`,
-        "_blank"
-      );
+            window.location.href =
+                "https://wa.me/77475123621?text=" +
+                encodeURIComponent(text);
 
-    }, 700);
+        }, 500);
 
-  });
+    });
 
 }
 /* ===========================
@@ -159,120 +148,152 @@ function setupLeadForm() {
 
 function setupLightbox() {
 
-  const lightbox = document.querySelector("[data-lightbox]");
+    const lightbox = document.querySelector("[data-lightbox]");
 
-  if (!lightbox) return;
+    if (!lightbox) return;
 
-  const image = lightbox.querySelector("[data-lightbox-image]");
-  const title = lightbox.querySelector("[data-lightbox-title]");
-  const thumbs = lightbox.querySelector("[data-lightbox-thumbs]");
+    const image = lightbox.querySelector("[data-lightbox-image]");
+    const title = lightbox.querySelector("[data-lightbox-title]");
+    const thumbs = lightbox.querySelector("[data-lightbox-thumbs]");
 
-  let active = 0;
+    let active = 0;
 
-  function render() {
+    function render() {
 
-    image.src = works[active].src;
-    image.alt = works[active].title;
-    title.textContent = works[active].title;
+        image.src = works[active].src;
+        image.alt = works[active].title;
+        title.textContent = works[active].title;
 
-    thumbs.querySelectorAll("button").forEach((button, index) => {
-      button.classList.toggle("active", index === active);
-    });
+        thumbs.querySelectorAll("button").forEach((button, index) => {
 
-  }
+            button.classList.toggle("active", index === active);
 
-  function open(index) {
-
-    active = index;
-
-    lightbox.classList.add("open");
-
-    document.body.style.overflow = "hidden";
-
-    render();
-
-  }
-
-  function close() {
-
-    lightbox.classList.remove("open");
-
-    document.body.style.overflow = "";
-
-  }
-
-  function move(step) {
-
-    active = (active + step + works.length) % works.length;
-
-    render();
-
-  }
-
-  thumbs.innerHTML = works.map((work, index) => `
-      <button
-        type="button"
-        data-thumb="${index}"
-        aria-label="${work.title}">
-        <img src="${work.src}" alt="${work.title}">
-      </button>
-  `).join("");
-
-  document.querySelectorAll("[data-gallery-index]").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-      open(Number(button.dataset.galleryIndex));
-
-    });
-
-  });
-
-  thumbs.addEventListener("click", event => {
-
-    const button = event.target.closest("[data-thumb]");
-
-    if (!button) return;
-
-    active = Number(button.dataset.thumb);
-
-    render();
-
-  });
-
-  lightbox
-    .querySelector("[data-close]")
-    .addEventListener("click", close);
-
-  lightbox
-    .querySelector("[data-prev]")
-    .addEventListener("click", () => move(-1));
-
-  lightbox
-    .querySelector("[data-next]")
-    .addEventListener("click", () => move(1));
-
-  lightbox.addEventListener("click", event => {
-
-    if (event.target === lightbox) {
-
-      close();
+        });
 
     }
 
-  });
+    function open(index) {
 
-  window.addEventListener("keydown", event => {
+        active = index;
 
-    if (!lightbox.classList.contains("open")) return;
+        lightbox.classList.add("open");
 
-    if (event.key === "Escape") close();
+        document.body.style.overflow = "hidden";
 
-    if (event.key === "ArrowLeft") move(-1);
+        render();
 
-    if (event.key === "ArrowRight") move(1);
+    }
 
-  });
+    function close() {
+
+        lightbox.classList.remove("open");
+
+        document.body.style.overflow = "";
+
+    }
+
+    function next() {
+
+        active++;
+
+        if (active >= works.length) {
+
+            active = 0;
+
+        }
+
+        render();
+
+    }
+
+    function prev() {
+
+        active--;
+
+        if (active < 0) {
+
+            active = works.length - 1;
+
+        }
+
+        render();
+
+    }
+
+    thumbs.innerHTML = works.map((work, index) => `
+        <button
+            type="button"
+            data-thumb="${index}"
+            aria-label="${work.title}">
+            <img src="${work.src}" alt="${work.title}">
+        </button>
+    `).join("");
+
+    document.querySelectorAll("[data-gallery-index]").forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            open(Number(button.dataset.galleryIndex));
+
+        });
+
+    });
+
+    thumbs.addEventListener("click", event => {
+
+        const button = event.target.closest("[data-thumb]");
+
+        if (!button) return;
+
+        active = Number(button.dataset.thumb);
+
+        render();
+
+    });
+
+    lightbox
+        .querySelector("[data-close]")
+        .addEventListener("click", close);
+
+    lightbox
+        .querySelector("[data-next]")
+        .addEventListener("click", next);
+
+    lightbox
+        .querySelector("[data-prev]")
+        .addEventListener("click", prev);
+
+    lightbox.addEventListener("click", event => {
+
+        if (event.target === lightbox) {
+
+            close();
+
+        }
+
+    });
+
+    window.addEventListener("keydown", event => {
+
+        if (!lightbox.classList.contains("open")) return;
+
+        switch (event.key) {
+
+            case "Escape":
+                close();
+                break;
+
+            case "ArrowLeft":
+                prev();
+                break;
+
+            case "ArrowRight":
+                next();
+                break;
+
+        }
+
+    });
 
 }
 
@@ -282,24 +303,29 @@ function setupLightbox() {
 
 function fillGalleryPage() {
 
-  const grid = document.querySelector("[data-gallery-grid]");
+    const grid = document.querySelector("[data-gallery-grid]");
 
-  if (!grid) return;
+    if (!grid) return;
 
-  grid.innerHTML = works.map((work, index) => `
-      <button
-        type="button"
-        data-gallery-index="${index}">
-        <img
-          src="${work.src}"
-          alt="${work.title}">
-      </button>
-  `).join("");
+    grid.innerHTML = works.map((work, index) => `
+
+        <button
+            class="gallery-item"
+            type="button"
+            data-gallery-index="${index}">
+
+            <img
+                src="${work.src}"
+                alt="${work.title}"
+                loading="lazy">
+
+        </button>
+
+    `).join("");
 
 }
-
 /* ===========================
-   Запуск
+   Запуск приложения
 =========================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -309,5 +335,23 @@ document.addEventListener("DOMContentLoaded", () => {
     fillGalleryPage();
 
     setupLightbox();
+
+    console.log("✅ Decor Mebel KZ загружен");
+
+});
+
+/* ===========================
+   Обработка ошибок
+=========================== */
+
+window.addEventListener("error", function(event) {
+
+    console.error("Ошибка JavaScript:", event.error || event.message);
+
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+
+    console.error("Ошибка Promise:", event.reason);
 
 });
